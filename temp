@@ -147,29 +147,56 @@ export default AccessManagement;
 
 
 import React from 'react';
-import { Menubar } from 'primereact/menubar';
-import 'primereact/resources/themes/saga-blue/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
+import { Link } from 'react-router-dom';
+import './Navbar.css'; // Import the CSS file for styling
 
-const Navbar: React.FC = () => {
-  const start = (
-    <div className="p-d-flex p-ai-center">
-      <img
-        src="https://your-logo-url.com/logo.png"
-        alt="logo"
-        height="40"
-        className="p-mr-2"
-      />
-      <span className="p-text-bold p-text-uppercase">Your Company Name</span>
-    </div>
-  );
+interface NavbarProps {
+  logo: string; // URL for the logo
+  name: string; // Name to display
+}
 
+const Navbar: React.FC<NavbarProps> = ({ logo, name }) => {
   return (
-    <Menubar start={start} />
+    <nav className="navbar">
+      <div className="navbar-left">
+        <img src={logo} alt="Logo" className="navbar-logo" />
+        <Link to="/" className="navbar-name">
+          {name}
+        </Link>
+      </div>
+    </nav>
   );
 };
 
 export default Navbar;
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #282c34;
+  color: white;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.navbar-name {
+  font-size: 24px;
+  color: white;
+  text-decoration: none;
+}
+
+.navbar-name:hover {
+  text-decoration: underline;
+}
+ <Navbar logo="/path-to-your-logo.png" name="Your Website Name" />
 
