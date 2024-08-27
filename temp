@@ -144,3 +144,32 @@ const AccessManagement: React.FC = () => {
 };
 
 export default AccessManagement;
+
+
+import React from 'react';
+import { Menubar } from 'primereact/menubar';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import 'primeflex/primeflex.css';
+
+const Navbar: React.FC = () => {
+  const start = (
+    <div className="p-d-flex p-ai-center">
+      <img
+        src="https://your-logo-url.com/logo.png"
+        alt="logo"
+        height="40"
+        className="p-mr-2"
+      />
+      <span className="p-text-bold p-text-uppercase">Your Company Name</span>
+    </div>
+  );
+
+  return (
+    <Menubar start={start} />
+  );
+};
+
+export default Navbar;
+
