@@ -1,0 +1,146 @@
+import React, { useState, useEffect } from 'react';
+import { InputText } from 'primereact/inputtext';
+import { Card } from 'primereact/card';
+import { Checkbox } from 'primereact/checkbox';
+import { Button } from 'primereact/button';
+import { Panel } from 'primereact/panel';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import 'primeflex/primeflex.css';
+
+interface Access {
+  id: string;
+  name: string;
+  selected: boolean;
+}
+
+interface SystemAccess {
+  systemName: string;
+  accesses: Access[];
+}
+
+const AccessManagement: React.FC = () => {
+  const [empId, setEmpId] = useState<string>('');
+  const [accessList, setAccessList] = useState<SystemAccess[]>([]);
+
+  // Example data - replace this with your API call or data fetching logic
+  const fetchAccessList = (id: string): SystemAccess[] => {
+    return [
+      {
+        systemName: 'Capture',
+        accesses: [
+          { id: '1', name: 'Access A', selected: false },
+          { id: '2', name: 'Access B', selected: false },
+        ],
+      },
+      {
+        systemName: 'Manage',
+        accesses: [
+          { id: '3', name: 'Access C', selected: false },
+          { id: '4', name: 'Access D', selected: false },
+        ],
+      },
+    ];
+  };
+
+  useEffect(() => {
+    if (empId) {
+      const data = fetchAccessList(empId);
+      setAccessList(data);
+    }
+  }, [empId]);
+
+  const handleSelectAll = (systemName: string) => {
+    setAccessList(prevList =>
+      prevList.map(system =>
+        system.systemName === systemName
+          ? {
+              ...system,
+              accesses: system.accesses.map(access => ({
+                ...access,
+                selected: !system.accesses.every(a => a.selected),
+              })),
+            }
+          : system
+      )
+    );
+  };
+
+  const handleCheckboxChange = (systemName: string, accessId: string) => {
+    setAccessList(prevList =>
+      prevList.map(system =>
+        system.systemName === systemName
+          ? {
+              ...system,
+              accesses: system.accesses.map(access =>
+                access.id === accessId
+                  ? { ...access, selected: !access.selected }
+                  : access
+              ),
+            }
+          : system
+      )
+    );
+  };
+
+  return (
+    <div className="p-grid p-fluid p-justify-center" style={{ marginTop: '20px' }}>
+      <div className="p-col-12 p-md-8 p-lg-6">
+        <Card title="Employee Access Management">
+          <div className="p-field">
+            <label htmlFor="empId">Enter Employee ID:</label>
+            <InputText
+              id="empId"
+              value={empId}
+              onChange={e => setEmpId(e.target.value)}
+              className="p-inputtext-lg"
+              placeholder="Employee ID"
+            />
+          </div>
+          {accessList.map(system => (
+            <Card key={system.systemName} className="p-mt-4">
+              <Panel
+                header={system.systemName}
+                toggleable
+                collapsed
+                icons={
+                  <>
+                    <Checkbox
+                      inputId={`selectAll-${system.systemName}`}
+                      checked={system.accesses.every(access => access.selected)}
+                      onChange={() => handleSelectAll(system.systemName)}
+                    />
+                    <label htmlFor={`selectAll-${system.systemName}`} style={{ marginLeft: '10px' }}>
+                      Select All
+                    </label>
+                  </>
+                }
+              >
+                <div className="p-grid">
+                  {system.accesses.map(access => (
+                    <div key={access.id} className="p-col-12">
+                      <div className="p-field-checkbox">
+                        <Checkbox
+                          inputId={access.id}
+                          checked={access.selected}
+                          onChange={() =>
+                            handleCheckboxChange(system.systemName, access.id)
+                          }
+                        />
+                        <label htmlFor={access.id}>{access.name}</label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </Card>
+          ))}
+          <Button label="Submit" className="p-mt-4 p-button-success" />
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default AccessManagement;
