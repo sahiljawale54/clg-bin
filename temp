@@ -1,13 +1,10 @@
+// AccessManagement.tsx
 import React, { useState, useEffect } from 'react';
-import { InputText } from 'primereact/inputtext';
 import { Card } from 'primereact/card';
-import { Checkbox } from 'primereact/checkbox';
+import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Panel } from 'primereact/panel';
-import 'primereact/resources/themes/saga-blue/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
+import AccessPanel from './AccessPanel';
+import './styles/App.css';
 
 interface Access {
   id: string;
@@ -18,10 +15,13 @@ interface Access {
 interface SystemAccess {
   systemName: string;
   accesses: Access[];
+  textValue?: string;
+  validTo?: Date | null;
 }
 
 const AccessManagement: React.FC = () => {
-  const [empId, setEmpId] = useState<string>('');
+  const [currentEmpId, setCurrentEmpId] = useState<string>('');
+  const [cloneEmpId, setCloneEmpId] = useState<string>('');
   const [accessList, setAccessList] = useState<SystemAccess[]>([]);
 
   // Example data - replace this with your API call or data fetching logic
@@ -45,11 +45,11 @@ const AccessManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    if (empId) {
-      const data = fetchAccessList(empId);
+    if (cloneEmpId) {
+      const data = fetchAccessList(cloneEmpId);
       setAccessList(data);
     }
-  }, [empId]);
+  }, [cloneEmpId]);
 
   const handleSelectAll = (systemName: string) => {
     setAccessList(prevList =>
@@ -84,59 +84,89 @@ const AccessManagement: React.FC = () => {
     );
   };
 
+  const handleTextChange = (systemName: string, value: string) => {
+    setAccessList(prevList =>
+      prevList.map(system =>
+        system.systemName === systemName
+          ? { ...system, textValue: value }
+          : system
+      )
+    );
+  };
+
+  const handleDateChange = (systemName: string, date: Date | null) => {
+    setAccessList(prevList =>
+      prevList.map(system =>
+        system.systemName === systemName
+          ? { ...system, validTo: date }
+          : system
+      )
+    );
+  };
+
+  const handleSubmit = () => {
+    // Collect and format data as JSON
+    const result = {
+      currentEmpId,
+      cloneEmpId,
+      systems: accessList.map(system => ({
+        systemName: system.systemName,
+        accesses: system.accesses.map(access => ({
+          id: access.id,
+          name: access.name,
+          selected: access.selected,
+        })),
+        textValue: system.textValue || '',
+        validTo: system.validTo ? system.validTo.toISOString().split('T')[0] : null,
+      })),
+    };
+
+    console.log('Result JSON:', JSON.stringify(result, null, 2));
+    // You can also return the result or send it to a server here
+  };
+
   return (
-    <div className="p-grid p-fluid p-justify-center" style={{ marginTop: '20px' }}>
+    <div className="p-grid p-fluid p-justify-center">
       <div className="p-col-12 p-md-8 p-lg-6">
         <Card title="Employee Access Management">
+          {/* Current Employee ID Input */}
           <div className="p-field">
-            <label htmlFor="empId">Enter Employee ID:</label>
+            <label htmlFor="currentEmpId">Current Employee ID:</label>
             <InputText
-              id="empId"
-              value={empId}
-              onChange={e => setEmpId(e.target.value)}
+              id="currentEmpId"
+              value={currentEmpId}
+              onChange={e => setCurrentEmpId(e.target.value)}
               className="p-inputtext-lg"
-              placeholder="Employee ID"
+              placeholder="Current Employee ID"
             />
           </div>
+
+          {/* Clone Employee ID Input */}
+          <div className="p-field">
+            <label htmlFor="cloneEmpId">Clone Employee ID:</label>
+            <InputText
+              id="cloneEmpId"
+              value={cloneEmpId}
+              onChange={e => setCloneEmpId(e.target.value)}
+              className="p-inputtext-lg"
+              placeholder="Clone Employee ID"
+            />
+          </div>
+
+          {/* Render Access Panels */}
           {accessList.map(system => (
-            <Card key={system.systemName} className="p-mt-4">
-              <Panel
-                header={system.systemName}
-                toggleable
-                collapsed
-                icons={
-                  <>
-                    <Checkbox
-                      inputId={`selectAll-${system.systemName}`}
-                      checked={system.accesses.every(access => access.selected)}
-                      onChange={() => handleSelectAll(system.systemName)}
-                    />
-                    <label htmlFor={`selectAll-${system.systemName}`} style={{ marginLeft: '10px' }}>
-                      Select All
-                    </label>
-                  </>
-                }
-              >
-                <div className="p-grid">
-                  {system.accesses.map(access => (
-                    <div key={access.id} className="p-col-12">
-                      <div className="p-field-checkbox">
-                        <Checkbox
-                          inputId={access.id}
-                          checked={access.selected}
-                          onChange={() =>
-                            handleCheckboxChange(system.systemName, access.id)
-                          }
-                        />
-                        <label htmlFor={access.id}>{access.name}</label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Panel>
-            </Card>
+            <AccessPanel
+              key={system.systemName}
+              system={system}
+              handleSelectAll={handleSelectAll}
+              handleCheckboxChange={handleCheckboxChange}
+              handleTextChange={handleTextChange}
+              handleDateChange={handleDateChange}
+            />
           ))}
-          <Button label="Submit" className="p-mt-4 p-button-success" />
+
+          {/* Submit Button */}
+          <Button label="Submit" className="p-mt-4 p-button-success" onClick={handleSubmit} />
         </Card>
       </div>
     </div>
@@ -144,59 +174,3 @@ const AccessManagement: React.FC = () => {
 };
 
 export default AccessManagement;
-
-
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Navbar.css'; // Import the CSS file for styling
-
-interface NavbarProps {
-  logo: string; // URL for the logo
-  name: string; // Name to display
-}
-
-const Navbar: React.FC<NavbarProps> = ({ logo, name }) => {
-  return (
-    <nav className="navbar">
-      <div className="navbar-left">
-        <img src={logo} alt="Logo" className="navbar-logo" />
-        <Link to="/" className="navbar-name">
-          {name}
-        </Link>
-      </div>
-    </nav>
-  );
-};
-
-export default Navbar;
-
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background-color: #282c34;
-  color: white;
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-}
-
-.navbar-logo {
-  height: 40px;
-  margin-right: 10px;
-}
-
-.navbar-name {
-  font-size: 24px;
-  color: white;
-  text-decoration: none;
-}
-
-.navbar-name:hover {
-  text-decoration: underline;
-}
- <Navbar logo="/path-to-your-logo.png" name="Your Website Name" />
-
