@@ -1,27 +1,45 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>Geo City Locator</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-  </head>
-  <body>
+<head>
+  <meta charset="UTF-8">
+  <title>IP Location Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    .location-box {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <h2>Your Location Details</h2>
+  <div class="location-box">
+    <div>IP Address: <span id="ip"></span></div>
     <div>Country: <span id="country"></span></div>
     <div>State: <span id="state"></span></div>
     <div>City: <span id="city"></span></div>
     <div>Latitude: <span id="latitude"></span></div>
     <div>Longitude: <span id="longitude"></span></div>
-    <div>IP: <span id="ip"></span></div>
-    <script>
-      $.getJSON("https://geolocation-db.com/json/").done(function (location) {
-        $("#country").html(location.country_name);
-        $("#state").html(location.state);
-        $("#city").html(location.city);
-        $("#latitude").html(location.latitude);
-        $("#longitude").html(location.longitude);
-        $("#ip").html(location.IPv4);
-      });
-    </script>
-  </body>
+  </div>
+
+  <script>
+    $.getJSON('https://ipapi.co/json/', function(data) {
+      $('#ip').text(data.ip);
+      $('#country').text(data.country_name);
+      $('#state').text(data.region);
+      $('#city').text(data.city);
+      $('#latitude').text(data.latitude);
+      $('#longitude').text(data.longitude);
+    }).fail(function() {
+      alert("Failed to fetch location. Please check your internet or try again later.");
+    });
+  </script>
+</body>
 </html>
